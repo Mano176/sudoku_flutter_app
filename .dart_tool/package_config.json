@@ -2,6 +2,18 @@
   "configVersion": 2,
   "packages": [
     {
+      "name": "archive",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/archive-3.3.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "args",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/args-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
       "name": "async",
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/async-2.11.0",
       "packageUri": "lib/",
@@ -20,6 +32,18 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "checked_yaml",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/checked_yaml-2.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "cli_util",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/cli_util-0.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
       "name": "clock",
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/clock-1.1.1",
       "packageUri": "lib/",
@@ -30,6 +54,18 @@
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/collection-1.17.1",
       "packageUri": "lib/",
       "languageVersion": "2.18"
+    },
+    {
+      "name": "convert",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/convert-3.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "crypto",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/crypto-3.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
     },
     {
       "name": "cupertino_icons",
@@ -50,6 +86,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "flutter_launcher_icons",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_launcher_icons-0.13.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "flutter_lints",
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_lints-2.0.3",
       "packageUri": "lib/",
@@ -62,8 +104,20 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "image",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/image-4.0.17",
+      "packageUri": "lib/",
+      "languageVersion": "2.15"
+    },
+    {
       "name": "js",
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/js-0.6.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "json_annotation",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/json_annotation-4.8.1",
       "packageUri": "lib/",
       "languageVersion": "2.19"
     },
@@ -96,6 +150,18 @@
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/path-1.8.3",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "petitparser",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/petitparser-5.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "pointycastle",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/pointycastle-3.7.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
     },
     {
       "name": "sky_engine",
@@ -140,10 +206,28 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "typed_data",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/typed_data-1.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "vector_math",
       "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/vector_math-2.1.4",
       "packageUri": "lib/",
       "languageVersion": "2.14"
+    },
+    {
+      "name": "xml",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/xml-6.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "yaml",
+      "rootUri": "file:///C:/Users/manos/AppData/Local/Pub/Cache/hosted/pub.dev/yaml-3.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
     },
     {
       "name": "sudoku_flutter_app",
@@ -152,7 +236,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2023-09-11T10:25:13.809063Z",
+  "generated": "2023-09-11T14:55:32.898789Z",
   "generator": "pub",
   "generatorVersion": "3.0.0-348.0.dev"
 }
