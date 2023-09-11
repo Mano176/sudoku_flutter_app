@@ -1,17 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku_flutter_app/sudoku_page.dart';
+import 'package:window_manager/window_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'start_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await WindowManager.instance.ensureInitialized();
+  windowManager.waitUntilReadyToShow().then((_) async {
+    await windowManager.setTitle('Sudoku');
+  });
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool darkMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    () async {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        darkMode = prefs.getBool("darkMode") ?? false;
+      });
+    }();
+  }
+
+  setDarkMode(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      darkMode = value;
+      prefs.setBool("darkMode", value);
+    });
+  }
+
+  getDarkMode() {
+    return darkMode;
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sudoku',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: true,
@@ -20,45 +59,8 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
-      themeMode: ThemeMode.light,
-      home: const MainPage(),
-    );
-  }
-}
-
-class MainPage extends StatelessWidget {
-  const MainPage({super.key});
-
-  static final modes = ["Leicht", "Mittel", "Schwer"];
-
-  startSoduko(context, mode) {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SudokuPage(mode)));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            Image.asset(
-              "assets/icon.png",
-              width: 100,
-              height: 100,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var mode in modes)
-                  ElevatedButton(
-                      onPressed: () => startSoduko(context, mode),
-                      child: Text(mode)),
-              ],
-            )
-          ],
-        ),
-      ),
+      themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+      home: StartPage(setDarkMode, getDarkMode),
     );
   }
 }
