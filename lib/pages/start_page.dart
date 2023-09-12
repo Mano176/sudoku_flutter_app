@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../sudoku_algorithms.dart';
 import 'sudoku_page.dart';
 
@@ -18,7 +19,7 @@ class StartPage extends StatelessWidget {
       appBar: AppBar(
         actions: [
           IconButton(
-            icon: Icon(getDarkMode() ? Icons.dark_mode : Icons.light_mode),
+            icon: Icon(getDarkMode() ? Symbols.dark_mode : Symbols.light_mode),
             onPressed: () {
               setDarkMode(!getDarkMode());
             },
