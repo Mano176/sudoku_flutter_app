@@ -10,7 +10,7 @@ class StartPage extends StatelessWidget {
   const StartPage(this.setDarkMode, this.getDarkMode, {super.key});
 
   startSoduko(context, mode) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => SudokuPage(mode, setDarkMode, getDarkMode)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SudokuPage(1234, mode, setDarkMode, getDarkMode)));
   }
 
   @override
