@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
     }();
   }
 
-  setDarkMode(bool value) async {
+  void setDarkMode(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       darkMode = value;
@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  getDarkMode() {
+  bool getDarkMode() {
     return darkMode;
   }
 
