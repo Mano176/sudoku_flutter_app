@@ -18,9 +18,25 @@ class SudokuPage extends StatefulWidget {
 }
 
 class _SudokuPageState extends State<SudokuPage> {
+  late final List<List<int>> userGrid;
+  late final List<List<List<bool>>> notes;
+  bool noteMode = false;
   int highlightedRow = -1;
   int highlightedColumn = -1;
   int highlightedSquare = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    userGrid = copyGrid(widget.grid);
+    notes = List.generate(9, (i) => List.generate(9, (j) => List.generate(9, (k) => false)));
+  }
+
+  void toggleNodeMode() {
+    setState(() {
+      noteMode = !noteMode;
+    });
+  }
 
   void setHighlight(int highlightedRow, int highlightedColumn) {
     setState(() {
@@ -33,6 +49,19 @@ class _SudokuPageState extends State<SudokuPage> {
       this.highlightedRow = highlightedRow;
       this.highlightedColumn = highlightedColumn;
       highlightedSquare = (highlightedRow ~/ 3) * 3 + (highlightedColumn ~/ 3);
+    });
+  }
+
+  void numberClick(int number) {
+    if (highlightedRow == -1 || highlightedColumn == -1 || widget.grid[highlightedRow][highlightedColumn] != 0) {
+      return;
+    }
+    setState(() {
+      if (noteMode) {
+        notes[highlightedRow][highlightedColumn][number - 1] = !notes[highlightedRow][highlightedColumn][number - 1];
+      } else {
+        userGrid[highlightedRow][highlightedColumn] = number;
+      }
     });
   }
 
@@ -55,28 +84,44 @@ class _SudokuPageState extends State<SudokuPage> {
           children: [
             Column(
               children: [
-                for (int row = 0; row < widget.grid.length; row++)
+                for (int row = 0; row < userGrid.length; row++)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      for (int col = 0; col < widget.grid[row].length; col++)
+                      for (int col = 0; col < userGrid[row].length; col++)
                         SizedBox(
                           width: 30,
                           height: 30,
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.black),
-                              color: row == highlightedRow && col == highlightedColumn
-                                  ? Colors.grey.shade400
-                                  : row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare
-                                      ? Colors.grey.shade500
-                                      : null,
+                              color: () {
+                                Color highlightColor = widget.getDarkMode() ? Colors.white : Colors.black;
+                                if (row == highlightedRow && col == highlightedColumn) {
+                                  return highlightColor.withOpacity(0.75);
+                                }
+                                if (row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare) {
+                                  return highlightColor.withOpacity(0.5);
+                                }
+                                return null;
+                              }(),
                             ),
                             child: TextButton(
                               onPressed: () => setHighlight(row, col),
                               style: TextButton.styleFrom(padding: EdgeInsets.zero),
                               child: Center(
-                                child: Text(widget.grid[row][col] == 0 ? "" : widget.grid[row][col].toString()),
+                                child: Text(
+                                  userGrid[row][col] == 0 ? "" : userGrid[row][col].toString(),
+                                  style: TextStyle(color: () {
+                                    Color textColor = widget.getDarkMode() ? Colors.white : Colors.black;
+                                    Color textColorHighlighted = widget.getDarkMode() ? Colors.black : Colors.white;
+                                    bool isHighlighted =
+                                        row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare;
+                                    Color returnColor = isHighlighted ? textColorHighlighted : textColor;
+                                    returnColor = widget.grid[row][col] == 0 ? returnColor.withOpacity(0.5) : returnColor;
+                                    return returnColor;
+                                  }()),
+                                ),
                               ),
                             ),
                           ),
@@ -91,10 +136,10 @@ class _SudokuPageState extends State<SudokuPage> {
                 IconButton(onPressed: () => {}, icon: const Icon(Symbols.undo)),
                 IconButton(onPressed: () => {}, icon: const Icon(Symbols.ink_eraser)),
                 IconButton(
-                    onPressed: () => {},
-                    icon: const Icon(
+                    onPressed: () => toggleNodeMode(),
+                    icon: Icon(
                       Symbols.edit,
-                      fill: 1,
+                      fill: noteMode ? 1 : 0,
                     )),
               ],
             ),
@@ -106,7 +151,7 @@ class _SudokuPageState extends State<SudokuPage> {
                       width: 30,
                       height: 30,
                       child: TextButton(
-                          onPressed: () => {},
+                          onPressed: () => numberClick(i),
                           style: TextButton.styleFrom(padding: EdgeInsets.zero),
                           child: Text(
                             i.toString(),
