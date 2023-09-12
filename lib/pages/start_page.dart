@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../sudoku_algorithms.dart';
 import 'sudoku_page.dart';
 
 class StartPage extends StatelessWidget {
@@ -8,13 +8,8 @@ class StartPage extends StatelessWidget {
 
   const StartPage(this.setDarkMode, this.getDarkMode, {super.key});
 
-  static final difficulties = ["Easy", "Middle", "Hard"];
-
   startSoduko(context, mode) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => SudokuPage(mode, setDarkMode, getDarkMode)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SudokuPage(mode, setDarkMode, getDarkMode)));
   }
 
   @override
@@ -41,10 +36,8 @@ class StartPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (String difficulty in difficulties)
-                  ElevatedButton(
-                      onPressed: () => startSoduko(context, difficulty),
-                      child: Text(difficulty)),
+                for (Difficulty difficulty in Difficulty.values)
+                  ElevatedButton(onPressed: () => startSoduko(context, difficulty), child: Text(difficulty.name)),
               ],
             )
           ],

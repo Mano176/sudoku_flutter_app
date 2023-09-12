@@ -1,9 +1,12 @@
 import 'dart:math';
 
+const int minEmptyCells = 30;
+const int maxEmptyCells = 54;
+
 enum Difficulty {
-  easy("Easy", 10),
-  middle("Middle", 12.5),
-  hard("Hard", 15);
+  easy("Easy", minEmptyCells + 5),
+  medium("Medium", (minEmptyCells + maxEmptyCells) / 2),
+  hard("Hard", maxEmptyCells - 5);
 
   final String name;
   final double emptyCellsMean;
@@ -154,8 +157,8 @@ List<List<int>> createSudoku(int seed, Difficulty difficulty) {
   Random random = Random(seed);
   fillGrid(grid, random);
 
-  int sample = normalDistSample(1.25, difficulty.emptyCellsMean, random).round();
-  int emptyCells = sample < 9 ? 9 : (sample > 16 ? 16 : sample);
+  int sample = normalDistSample((maxEmptyCells - minEmptyCells) / Difficulty.values.length, difficulty.emptyCellsMean, random).round();
+  int emptyCells = sample < minEmptyCells ? minEmptyCells : (sample > maxEmptyCells ? maxEmptyCells : sample);
   while (emptyCells > 0) {
     late int row;
     late int col;
@@ -200,4 +203,51 @@ double normalDistSample(double std, double mean, Random random) {
   } while (w >= 1.0);
   final r = x1 * sqrt((-2.0 * log(w)) / w);
   return r * std + mean;
+}
+
+void main() {
+  List<int> emptyCellsCount = [];
+  for (int i = minEmptyCells; i <= maxEmptyCells; i++) {
+    emptyCellsCount.add(0);
+  }
+
+  late List<List<int>> grid;
+  late int count;
+  for (int i = 0; i < 100; i++) {
+    print(i);
+    grid = createSudoku(i, Difficulty.easy);
+    count = 0;
+    for (List<int> row in grid) {
+      for (int cell in row) {
+        if (cell == 0) {
+          count++;
+        }
+      }
+    }
+    emptyCellsCount[count - minEmptyCells]++;
+
+    grid = createSudoku(i, Difficulty.medium);
+    count = 0;
+    for (List<int> row in grid) {
+      for (int cell in row) {
+        if (cell == 0) {
+          count++;
+        }
+      }
+    }
+    emptyCellsCount[count - minEmptyCells]++;
+
+    grid = createSudoku(i, Difficulty.hard);
+    count = 0;
+    for (List<int> row in grid) {
+      for (int cell in row) {
+        if (cell == 0) {
+          count++;
+        }
+      }
+    }
+    emptyCellsCount[count - minEmptyCells]++;
+  }
+
+  print(emptyCellsCount);
 }

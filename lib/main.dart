@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'start_page.dart';
+import 'pages/start_page.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await WindowManager.instance.ensureInitialized();
-  windowManager.waitUntilReadyToShow().then((_) async {
-    await windowManager.setTitle('Sudoku');
-  });
-
+  if (!kIsWeb && Platform.isWindows) {
+    WidgetsFlutterBinding.ensureInitialized();
+    await WindowManager.instance.ensureInitialized();
+    windowManager.waitUntilReadyToShow().then((_) async {
+      await windowManager.setTitle('Sudoku');
+    });
+  }
   runApp(const MyApp());
 }
 
