@@ -37,7 +37,7 @@ class StartPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 for (Difficulty difficulty in Difficulty.values)
-                  ElevatedButton(onPressed: () => startSoduko(context, difficulty), child: Text(difficulty.name)),
+                  OutlinedButton(onPressed: () => startSoduko(context, difficulty), child: Text(difficulty.name)),
               ],
             )
           ],

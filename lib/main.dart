@@ -55,11 +55,11 @@ class _MyAppState extends State<MyApp> {
       title: 'Sudoku',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.light,
+        colorScheme: const ColorScheme.light().copyWith(primary: Colors.black),
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
+        colorScheme: const ColorScheme.dark().copyWith(primary: Colors.white),
         useMaterial3: true,
       ),
       themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
