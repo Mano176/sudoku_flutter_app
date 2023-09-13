@@ -160,14 +160,31 @@ class _SudokuPageState extends State<SudokuPage> {
     }
   }
 
+  bool isHighlighted(int row, int col) {
+    return row == highlightedRow ||
+        col == highlightedColumn ||
+        (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare ||
+        (highlightedRow != -1 && highlightedColumn != -1 && userGrid[row][col] == userGrid[highlightedRow][highlightedColumn]);
+  }
+
+  Color? getCellColor(int row, int col) {
+    Color highlightColor = widget.getDarkMode() ? Colors.white : Colors.black;
+    if (row == highlightedRow && col == highlightedColumn) {
+      return highlightColor.withOpacity(0.75);
+    }
+    if (isHighlighted(row, col)) {
+      return highlightColor.withOpacity(0.5);
+    }
+    return null;
+  }
+
   Color getCellTextColor(int row, int col) {
     if (falseCells.contains(row * 9 + col)) {
       return Colors.red;
     }
     Color textColor = widget.getDarkMode() ? Colors.white : Colors.black;
     Color textColorHighlighted = widget.getDarkMode() ? Colors.black : Colors.white;
-    bool isHighlighted = row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare;
-    Color returnColor = isHighlighted ? textColorHighlighted : textColor;
+    Color returnColor = isHighlighted(row, col) ? textColorHighlighted : textColor;
     returnColor = widget.grid[row][col] == 0 ? returnColor.withOpacity(0.5) : returnColor;
     return returnColor;
   }
@@ -217,17 +234,9 @@ class _SudokuPageState extends State<SudokuPage> {
                           height: cellSize,
                           child: Container(
                             decoration: BoxDecoration(
-                                border: getBorder(row, col),
-                                color: () {
-                                  Color highlightColor = widget.getDarkMode() ? Colors.white : Colors.black;
-                                  if (row == highlightedRow && col == highlightedColumn) {
-                                    return highlightColor.withOpacity(0.75);
-                                  }
-                                  if (row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare) {
-                                    return highlightColor.withOpacity(0.5);
-                                  }
-                                  return null;
-                                }()),
+                              border: getBorder(row, col),
+                              color: getCellColor(row, col),
+                            ),
                             child: InkWell(
                               onTap: () => setHighlight(row, col),
                               child: userGrid[row][col] == 0
