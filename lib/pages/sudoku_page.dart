@@ -86,6 +86,21 @@ class _SudokuPageState extends State<SudokuPage> {
     return returnColor;
   }
 
+  Border getBorder(int row, int col) {
+    Color colorOutside = Colors.black;
+    Color colorInside = Colors.black.withOpacity(0.5);
+    Color top = row % 3 == 0 ? colorOutside : colorInside;
+    Color bottom = row % 3 == 2 ? colorOutside : colorInside;
+    Color left = col % 3 == 0 ? colorOutside : colorInside;
+    Color right = col % 3 == 2 ? colorOutside : colorInside;
+    return Border(
+      top: BorderSide(color: top, width: 1.0),
+      bottom: BorderSide(color: bottom, width: 1.0),
+      left: BorderSide(color: left, width: 1.0),
+      right: BorderSide(color: right, width: 1.0),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +131,7 @@ class _SudokuPageState extends State<SudokuPage> {
                           height: cellSize,
                           child: Container(
                             decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black),
+                                border: getBorder(row, col),
                                 color: () {
                                   Color highlightColor = widget.getDarkMode() ? Colors.white : Colors.black;
                                   if (row == highlightedRow && col == highlightedColumn) {
