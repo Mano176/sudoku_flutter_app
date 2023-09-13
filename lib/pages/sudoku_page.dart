@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sudoku_flutter_app/sudoku_algorithms.dart';
 
+double cellSize = 35;
+
 class SudokuPage extends StatefulWidget {
   final int seed;
   final Difficulty difficulty;
@@ -65,6 +67,25 @@ class _SudokuPageState extends State<SudokuPage> {
     });
   }
 
+  void eraseClick() {
+    if (highlightedRow == -1 || highlightedColumn == -1 || widget.grid[highlightedRow][highlightedColumn] != 0) {
+      return;
+    }
+    setState(() {
+      notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
+      userGrid[highlightedRow][highlightedColumn] = 0;
+    });
+  }
+
+  Color getCellTextColor(int row, int col) {
+    Color textColor = widget.getDarkMode() ? Colors.white : Colors.black;
+    Color textColorHighlighted = widget.getDarkMode() ? Colors.black : Colors.white;
+    bool isHighlighted = row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare;
+    Color returnColor = isHighlighted ? textColorHighlighted : textColor;
+    returnColor = widget.grid[row][col] == 0 ? returnColor.withOpacity(0.5) : returnColor;
+    return returnColor;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,6 +102,7 @@ class _SudokuPageState extends State<SudokuPage> {
       ),
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Column(
               children: [
@@ -90,39 +112,37 @@ class _SudokuPageState extends State<SudokuPage> {
                     children: [
                       for (int col = 0; col < userGrid[row].length; col++)
                         SizedBox(
-                          width: 30,
-                          height: 30,
+                          width: cellSize,
+                          height: cellSize,
                           child: Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
-                              color: () {
-                                Color highlightColor = widget.getDarkMode() ? Colors.white : Colors.black;
-                                if (row == highlightedRow && col == highlightedColumn) {
-                                  return highlightColor.withOpacity(0.75);
-                                }
-                                if (row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare) {
-                                  return highlightColor.withOpacity(0.5);
-                                }
-                                return null;
-                              }(),
-                            ),
-                            child: TextButton(
-                              onPressed: () => setHighlight(row, col),
-                              style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                              child: Center(
-                                child: Text(
-                                  userGrid[row][col] == 0 ? "" : userGrid[row][col].toString(),
-                                  style: TextStyle(color: () {
-                                    Color textColor = widget.getDarkMode() ? Colors.white : Colors.black;
-                                    Color textColorHighlighted = widget.getDarkMode() ? Colors.black : Colors.white;
-                                    bool isHighlighted =
-                                        row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare;
-                                    Color returnColor = isHighlighted ? textColorHighlighted : textColor;
-                                    returnColor = widget.grid[row][col] == 0 ? returnColor.withOpacity(0.5) : returnColor;
-                                    return returnColor;
-                                  }()),
-                                ),
-                              ),
+                                border: Border.all(color: Colors.black),
+                                color: () {
+                                  Color highlightColor = widget.getDarkMode() ? Colors.white : Colors.black;
+                                  if (row == highlightedRow && col == highlightedColumn) {
+                                    return highlightColor.withOpacity(0.75);
+                                  }
+                                  if (row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare) {
+                                    return highlightColor.withOpacity(0.5);
+                                  }
+                                  return null;
+                                }()),
+                            child: InkWell(
+                              onTap: () => setHighlight(row, col),
+                              child: userGrid[row][col] == 0
+                                  ? GridView.count(crossAxisCount: 3, children: [
+                                      for (int i = 0; i < 9; i++)
+                                        Center(
+                                          child: Text(
+                                            (i + 1).toString(),
+                                            textScaleFactor: 0.6,
+                                            style: TextStyle(
+                                              color: notes[row][col][i] ? getCellTextColor(row, col) : Colors.transparent,
+                                            ),
+                                          ),
+                                        ),
+                                    ])
+                                  : Center(child: Text(userGrid[row][col].toString(), style: TextStyle(color: getCellTextColor(row, col)))),
                             ),
                           ),
                         ),
@@ -134,7 +154,7 @@ class _SudokuPageState extends State<SudokuPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(onPressed: () => {}, icon: const Icon(Symbols.undo)),
-                IconButton(onPressed: () => {}, icon: const Icon(Symbols.ink_eraser)),
+                IconButton(onPressed: eraseClick, icon: const Icon(Symbols.ink_eraser)),
                 IconButton(
                     onPressed: () => toggleNodeMode(),
                     icon: Icon(
@@ -148,8 +168,8 @@ class _SudokuPageState extends State<SudokuPage> {
               children: [
                 for (int i = 1; i <= 9; i++)
                   SizedBox(
-                      width: 30,
-                      height: 30,
+                      width: cellSize,
+                      height: cellSize,
                       child: TextButton(
                           onPressed: () => numberClick(i),
                           style: TextButton.styleFrom(padding: EdgeInsets.zero),
