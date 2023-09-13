@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sudoku_flutter_app/sudoku_algorithms.dart';
@@ -30,6 +32,7 @@ class _SudokuPageState extends State<SudokuPage> {
   int highlightedRow = -1;
   int highlightedColumn = -1;
   int highlightedSquare = -1;
+  int timerSeconds = 0;
 
   @override
   void initState() {
@@ -37,6 +40,15 @@ class _SudokuPageState extends State<SudokuPage> {
     userGrid = copyGrid(widget.grid);
     solution = solveGrid(widget.grid)[0];
     notes = List.generate(9, (i) => List.generate(9, (j) => List.generate(9, (k) => false)));
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (won) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        timerSeconds++;
+      });
+    });
   }
 
   void toggleNodeMode() {
@@ -204,12 +216,26 @@ class _SudokuPageState extends State<SudokuPage> {
     );
   }
 
+  String secondsToString(int seconds) {
+    int minutes = seconds ~/ 60;
+    seconds = seconds % 60;
+    int hours = minutes ~/ 60;
+    minutes = minutes % 60;
+    String hoursString = hours == 0 ? "" : "$hours:";
+    String minutesString = minutes.toString().padLeft(2, "0");
+    String secondsString = seconds.toString().padLeft(2, "0");
+    return "$hoursString$minutesString:$secondsString";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.difficulty.name),
         actions: [
+          Text(
+            secondsToString(timerSeconds),
+          ),
           IconButton(
             icon: Icon(widget.getDarkMode() ? Symbols.dark_mode : Symbols.light_mode),
             onPressed: () {
