@@ -1,6 +1,6 @@
 import 'dart:math';
 
-const int minEmptyCells = 30;
+const int minEmptyCells = 3; // TODO auf 30 setzen
 const int maxEmptyCells = 54;
 
 enum Difficulty {
@@ -13,7 +13,7 @@ enum Difficulty {
   const Difficulty(this.name, this.emptyCellsMean);
 }
 
-bool checkGrid(List<List<int>> grid) {
+bool checkGridFull(List<List<int>> grid) {
   for (List<int> row in grid) {
     for (int cell in row) {
       if (cell == 0) {
@@ -75,7 +75,7 @@ void solveGridRec(grid) {
       // Set cell to value
       grid[row][col] = value;
       // Check wether it is solved now
-      if (checkGrid(grid)) {
+      if (checkGridFull(grid)) {
         solutions.add(copyGrid(grid));
         break;
       }
@@ -132,7 +132,7 @@ bool fillGrid(List<List<int>> grid, Random random) {
       // Set cell to value
       grid[row][col] = value;
       // Check if whole grid is filled now
-      if (checkGrid(grid)) {
+      if (checkGridFull(grid)) {
         return true;
       }
       if (fillGrid(grid, random)) {

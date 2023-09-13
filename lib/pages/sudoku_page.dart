@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sudoku_flutter_app/sudoku_algorithms.dart';
 
-double cellSize = 35;
+const double cellSize = 35;
 
 class SudokuPage extends StatefulWidget {
   final int seed;
@@ -21,9 +21,12 @@ class SudokuPage extends StatefulWidget {
 
 class _SudokuPageState extends State<SudokuPage> {
   late final List<List<int>> userGrid;
+  late final List<List<int>> solution;
   late final List<List<List<bool>>> notes;
   final List<List<CellState>> states = [];
+  Set<int> falseCells = {};
   bool noteMode = false;
+  bool won = false;
   int highlightedRow = -1;
   int highlightedColumn = -1;
   int highlightedSquare = -1;
@@ -32,6 +35,7 @@ class _SudokuPageState extends State<SudokuPage> {
   void initState() {
     super.initState();
     userGrid = copyGrid(widget.grid);
+    solution = solveGrid(widget.grid)[0];
     notes = List.generate(9, (i) => List.generate(9, (j) => List.generate(9, (k) => false)));
   }
 
@@ -60,14 +64,28 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
+      if (!noteMode && userGrid[highlightedRow][highlightedColumn] == number) {
+        return;
+      }
+      falseCells.remove(highlightedRow * 9 + highlightedColumn);
       List<CellState> latestChanges = [];
       CellState state =
           CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
       latestChanges.add(state);
       if (noteMode) {
+        userGrid[highlightedRow][highlightedColumn] = 0;
         notes[highlightedRow][highlightedColumn][number - 1] = !notes[highlightedRow][highlightedColumn][number - 1];
       } else {
         userGrid[highlightedRow][highlightedColumn] = number;
+        notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
+        if (checkGridFull(userGrid)) {
+          if (checkWin()) {
+            won = true;
+          } else {
+            markFalse();
+          }
+          return;
+        }
         for (int i = 0; i < 9; i++) {
           if (notes[highlightedRow][i][number - 1]) {
             latestChanges.add(CellState(highlightedRow, i, userGrid[highlightedRow][i], notes[highlightedRow][i]));
@@ -121,7 +139,31 @@ class _SudokuPageState extends State<SudokuPage> {
     });
   }
 
+  bool checkWin() {
+    for (int row = 0; row < userGrid.length; row++) {
+      for (int col = 0; col < userGrid[row].length; col++) {
+        if (userGrid[row][col] != solution[row][col]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void markFalse() {
+    for (int row = 0; row < userGrid.length; row++) {
+      for (int col = 0; col < userGrid[row].length; col++) {
+        if (userGrid[row][col] != solution[row][col]) {
+          falseCells.add(row * 9 + col);
+        }
+      }
+    }
+  }
+
   Color getCellTextColor(int row, int col) {
+    if (falseCells.contains(row * 9 + col)) {
+      return Colors.red;
+    }
     Color textColor = widget.getDarkMode() ? Colors.white : Colors.black;
     Color textColorHighlighted = widget.getDarkMode() ? Colors.black : Colors.white;
     bool isHighlighted = row == highlightedRow || col == highlightedColumn || (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare;
@@ -212,7 +254,7 @@ class _SudokuPageState extends State<SudokuPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(onPressed: undoClick, icon: const Icon(Symbols.undo)),
+                IconButton(onPressed: states.isEmpty ? null : undoClick, icon: const Icon(Symbols.undo)),
                 IconButton(onPressed: eraseClick, icon: const Icon(Symbols.ink_eraser)),
                 IconButton(
                     onPressed: () => toggleNodeMode(),
