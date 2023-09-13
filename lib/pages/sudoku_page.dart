@@ -236,7 +236,7 @@ class _SudokuPageState extends State<SudokuPage> {
                                         Center(
                                           child: Text(
                                             (i + 1).toString(),
-                                            textScaleFactor: 0.6,
+                                            textScaler: const TextScaler.linear(0.6),
                                             style: TextStyle(
                                               color: notes[row][col][i] ? getCellTextColor(row, col) : Colors.transparent,
                                             ),
