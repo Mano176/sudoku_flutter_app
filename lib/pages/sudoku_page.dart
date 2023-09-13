@@ -22,6 +22,7 @@ class SudokuPage extends StatefulWidget {
 class _SudokuPageState extends State<SudokuPage> {
   late final List<List<int>> userGrid;
   late final List<List<List<bool>>> notes;
+  final List<List<GameState>> states = [];
   bool noteMode = false;
   int highlightedRow = -1;
   int highlightedColumn = -1;
@@ -59,6 +60,9 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
+      GameState state =
+          GameState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
+      states.add([state]);
       if (noteMode) {
         notes[highlightedRow][highlightedColumn][number - 1] = !notes[highlightedRow][highlightedColumn][number - 1];
       } else {
@@ -72,8 +76,24 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
+      GameState state =
+          GameState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
+      states.add([state]);
       notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
       userGrid[highlightedRow][highlightedColumn] = 0;
+    });
+  }
+
+  void undoClick() {
+    if (states.isEmpty) {
+      return;
+    }
+    setState(() {
+      List<GameState> latestChanges = states.removeLast();
+      for (GameState state in latestChanges) {
+        userGrid[state.row][state.col] = state.number;
+        notes[state.row][state.col] = state.notes;
+      }
     });
   }
 
@@ -168,7 +188,7 @@ class _SudokuPageState extends State<SudokuPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(onPressed: () => {}, icon: const Icon(Symbols.undo)),
+                IconButton(onPressed: undoClick, icon: const Icon(Symbols.undo)),
                 IconButton(onPressed: eraseClick, icon: const Icon(Symbols.ink_eraser)),
                 IconButton(
                     onPressed: () => toggleNodeMode(),
@@ -198,5 +218,16 @@ class _SudokuPageState extends State<SudokuPage> {
         ),
       ),
     );
+  }
+}
+
+class GameState {
+  final int row;
+  final int col;
+  final int number;
+  late final List<bool> notes;
+
+  GameState(this.row, this.col, this.number, notes) {
+    this.notes = List.from(notes);
   }
 }
