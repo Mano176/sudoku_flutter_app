@@ -22,7 +22,7 @@ class SudokuPage extends StatefulWidget {
 class _SudokuPageState extends State<SudokuPage> {
   late final List<List<int>> userGrid;
   late final List<List<List<bool>>> notes;
-  final List<List<GameState>> states = [];
+  final List<List<CellState>> states = [];
   bool noteMode = false;
   int highlightedRow = -1;
   int highlightedColumn = -1;
@@ -60,14 +60,38 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
-      GameState state =
-          GameState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
-      states.add([state]);
+      List<CellState> latestChanges = [];
+      CellState state =
+          CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
+      latestChanges.add(state);
       if (noteMode) {
         notes[highlightedRow][highlightedColumn][number - 1] = !notes[highlightedRow][highlightedColumn][number - 1];
       } else {
         userGrid[highlightedRow][highlightedColumn] = number;
+        for (int i = 0; i < 9; i++) {
+          if (notes[highlightedRow][i][number - 1]) {
+            latestChanges.add(CellState(highlightedRow, i, userGrid[highlightedRow][i], notes[highlightedRow][i]));
+            notes[highlightedRow][i][number - 1] = false;
+          }
+        }
+        for (int i = 0; i < 9; i++) {
+          if (notes[i][highlightedColumn][number - 1]) {
+            latestChanges.add(CellState(i, highlightedColumn, userGrid[i][highlightedColumn], notes[i][highlightedColumn]));
+            notes[i][highlightedColumn][number - 1] = false;
+          }
+        }
+        int rowIdentifier = (highlightedRow ~/ 3) * 3;
+        int colIdentifier = (highlightedColumn ~/ 3) * 3;
+        for (int i = rowIdentifier; i < rowIdentifier + 3; i++) {
+          for (int j = colIdentifier; j < colIdentifier + 3; j++) {
+            if (notes[i][j][number - 1]) {
+              latestChanges.add(CellState(i, j, userGrid[i][j], notes[i][j]));
+              notes[i][j][number - 1] = false;
+            }
+          }
+        }
       }
+      states.add(latestChanges);
     });
   }
 
@@ -76,8 +100,8 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
-      GameState state =
-          GameState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
+      CellState state =
+          CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
       states.add([state]);
       notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
       userGrid[highlightedRow][highlightedColumn] = 0;
@@ -89,8 +113,8 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
-      List<GameState> latestChanges = states.removeLast();
-      for (GameState state in latestChanges) {
+      List<CellState> latestChanges = states.removeLast();
+      for (CellState state in latestChanges) {
         userGrid[state.row][state.col] = state.number;
         notes[state.row][state.col] = state.notes;
       }
@@ -221,13 +245,13 @@ class _SudokuPageState extends State<SudokuPage> {
   }
 }
 
-class GameState {
+class CellState {
   final int row;
   final int col;
   final int number;
   late final List<bool> notes;
 
-  GameState(this.row, this.col, this.number, notes) {
+  CellState(this.row, this.col, this.number, notes) {
     this.notes = List.from(notes);
   }
 }
