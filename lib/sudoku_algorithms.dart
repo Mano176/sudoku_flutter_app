@@ -1,6 +1,6 @@
 import 'dart:math';
 
-const int minEmptyCells = 3; // TODO auf 30 setzen
+const int minEmptyCells = 30;
 const int maxEmptyCells = 54;
 
 enum Difficulty {
