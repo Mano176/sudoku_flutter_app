@@ -22,6 +22,7 @@ class SudokuPage extends StatefulWidget {
 }
 
 class _SudokuPageState extends State<SudokuPage> {
+  late final Timer timer;
   late final List<List<int>> userGrid;
   late final List<List<int>> solution;
   late final List<List<List<bool>>> notes;
@@ -40,11 +41,7 @@ class _SudokuPageState extends State<SudokuPage> {
     userGrid = copyGrid(widget.grid);
     solution = solveGrid(widget.grid)[0];
     notes = List.generate(9, (i) => List.generate(9, (j) => List.generate(9, (k) => false)));
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (won) {
-        timer.cancel();
-        return;
-      }
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         timerSeconds++;
       });
@@ -92,7 +89,8 @@ class _SudokuPageState extends State<SudokuPage> {
         notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
         if (checkGridFull(userGrid)) {
           if (checkWin()) {
-            won = true;
+            timer.cancel();
+            showDialog(context: context, builder: (BuildContext context) => winDialog());
           } else {
             markFalse();
           }
@@ -225,6 +223,36 @@ class _SudokuPageState extends State<SudokuPage> {
     String minutesString = minutes.toString().padLeft(2, "0");
     String secondsString = seconds.toString().padLeft(2, "0");
     return "$hoursString$minutesString:$secondsString";
+  }
+
+  Dialog winDialog() {
+    return Dialog(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        color: widget.getDarkMode() ? Colors.black : Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "You won!",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text("Difficulty: ${widget.difficulty.name}"),
+            Text("Time: ${secondsToString(timerSeconds)}"),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: const Text("Back to menu"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
