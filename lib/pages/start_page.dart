@@ -92,7 +92,7 @@ class _StartPageState extends State<StartPage> {
                   padding: const EdgeInsets.all(5.0),
                   child: OutlinedButton(
                     onPressed: () => savedSeed == null
-                        ? startSoduko(context, false, Random().nextInt(double.maxFinite.toInt()), difficulty)
+                        ? startSoduko(context, false, Random().nextInt(2 ^ 32), difficulty)
                         : showDialog(
                             context: context,
                             builder: (BuildContext context) => AlertDialog(
