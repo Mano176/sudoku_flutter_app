@@ -284,34 +284,36 @@ class _SudokuPageState extends State<SudokuPage> {
 
   void showWinDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) => Dialog(
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                color: widget.getDarkMode() ? Colors.black : Colors.white,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "You won!",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    Text("Difficulty: ${widget.difficulty.name}"),
-                    Text("Time: ${secondsToString(timerSeconds)}"),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Back to menu"),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ));
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("You won!"),
+          ],
+        ),
+        surfaceTintColor: Colors.transparent,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Difficulty: ${widget.difficulty.name}"),
+            Text("Time: ${secondsToString(timerSeconds)}"),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text("Back to menu"),
+          )
+        ],
+      ),
+    );
   }
 
   void saveStates(List<CellState> statesToSave) {

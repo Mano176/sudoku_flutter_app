@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,7 +90,32 @@ class _StartPageState extends State<StartPage> {
                 width: 120,
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
-                  child: OutlinedButton(onPressed: () => startSoduko(context, false, 1234, difficulty), child: Text(difficulty.name)),
+                  child: OutlinedButton(
+                    onPressed: () => savedSeed == null
+                        ? startSoduko(context, false, 1234, difficulty)
+                        : showDialog(
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text("Start new game?"),
+                              content: const Text("You will lose your current progress."),
+                              surfaceTintColor: Colors.transparent,
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    startSoduko(context, false, Random().nextInt(double.maxFinite.toInt()), difficulty);
+                                  },
+                                  child: const Text("Start"),
+                                ),
+                              ],
+                            ),
+                          ),
+                    child: Text(difficulty.name),
+                  ),
                 ),
               ),
           ],
