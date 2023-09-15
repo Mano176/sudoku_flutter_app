@@ -1,19 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sudoku_flutter_app/sudoku_algorithms.dart';
 
 const double cellSize = 35;
 
 class SudokuPage extends StatefulWidget {
+  final bool fromSave;
   final int seed;
   final Difficulty difficulty;
   final Function setDarkMode;
   final Function getDarkMode;
   late final List<List<int>> grid;
 
-  SudokuPage(this.seed, this.difficulty, this.setDarkMode, this.getDarkMode, {super.key}) {
+  SudokuPage(this.fromSave, this.seed, this.difficulty, this.setDarkMode, this.getDarkMode, {super.key}) {
     grid = createSudoku(seed, difficulty);
   }
 
@@ -26,10 +29,10 @@ class _SudokuPageState extends State<SudokuPage> {
   late final List<List<int>> userGrid;
   late final List<List<int>> solution;
   late final List<List<List<bool>>> notes;
-  final List<List<CellState>> states = [];
+  late final List<List<CellState>> states;
+  bool loading = true;
   Set<int> falseCells = {};
   bool noteMode = false;
-  bool won = false;
   int highlightedRow = -1;
   int highlightedColumn = -1;
   int highlightedSquare = -1;
@@ -38,17 +41,58 @@ class _SudokuPageState extends State<SudokuPage> {
   @override
   void initState() {
     super.initState();
-    userGrid = copyGrid(widget.grid);
     solution = solveGrid(widget.grid)[0];
-    notes = List.generate(9, (i) => List.generate(9, (j) => List.generate(9, (k) => false)));
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        timerSeconds++;
+    () async {
+      final prefs = await SharedPreferences.getInstance();
+      if (widget.fromSave) {
+        timerSeconds = prefs.getInt("timerSeconds")!;
+        states = List<List<CellState>>.from(
+            jsonDecode(prefs.getString("states")!).map((e) => List<CellState>.from(e.map((e2) => CellState.fromMap(e2)))).toList());
+        userGrid = List.generate(9, (i) => List.generate(9, (j) => 0));
+        notes = List.generate(9, (i) => List.generate(9, (j) => List.generate(9, (k) => false)));
+        for (List<CellState> changes in states) {
+          for (CellState change in changes) {
+            userGrid[change.row][change.col] = change.number;
+            notes[change.row][change.col] = List.from(change.notes);
+          }
+        }
+      } else {
+        states = [];
+        List<CellState> latestChanges = [];
+        userGrid = [];
+        notes = [];
+        for (int i = 0; i < widget.grid.length; i++) {
+          List<int> row = [];
+          List<List<bool>> notesRow = [];
+          for (int j = 0; j < widget.grid[i].length; j++) {
+            row.add(widget.grid[i][j]);
+            notesRow.add(List.generate(9, (k) => false));
+            latestChanges.add(CellState(i, j, widget.grid[i][j], notesRow[j]));
+          }
+          userGrid.add(row);
+          notes.add(notesRow);
+        }
+        saveStates(latestChanges);
+        prefs.setInt("seed", widget.seed);
+        prefs.setInt("difficulty", widget.difficulty.index);
+        prefs.setInt("timerSeconds", timerSeconds);
+      }
+    }()
+        .then((value) {
+      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        setState(() {
+          timerSeconds++;
+          () async {
+            final prefs = await SharedPreferences.getInstance();
+            prefs.setInt("timerSeconds", timerSeconds);
+          }();
+        });
       });
+      loading = false;
     });
   }
 
-  void toggleNodeMode() {
+  void toggleNoteMode() {
     setState(() {
       noteMode = !noteMode;
     });
@@ -78,19 +122,24 @@ class _SudokuPageState extends State<SudokuPage> {
       }
       falseCells.remove(highlightedRow * 9 + highlightedColumn);
       List<CellState> latestChanges = [];
-      CellState state =
-          CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
-      latestChanges.add(state);
       if (noteMode) {
         userGrid[highlightedRow][highlightedColumn] = 0;
         notes[highlightedRow][highlightedColumn][number - 1] = !notes[highlightedRow][highlightedColumn][number - 1];
+        latestChanges
+            .add(CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]));
       } else {
         userGrid[highlightedRow][highlightedColumn] = number;
         notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
+        latestChanges
+            .add(CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]));
         if (checkGridFull(userGrid)) {
           if (checkWin()) {
+            () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.remove("seed");
+            }();
             timer.cancel();
-            showDialog(context: context, builder: (BuildContext context) => winDialog());
+            showWinDialog();
           } else {
             markFalse();
           }
@@ -98,14 +147,14 @@ class _SudokuPageState extends State<SudokuPage> {
         }
         for (int i = 0; i < 9; i++) {
           if (notes[highlightedRow][i][number - 1]) {
-            latestChanges.add(CellState(highlightedRow, i, userGrid[highlightedRow][i], notes[highlightedRow][i]));
             notes[highlightedRow][i][number - 1] = false;
+            latestChanges.add(CellState(highlightedRow, i, userGrid[highlightedRow][i], notes[highlightedRow][i]));
           }
         }
         for (int i = 0; i < 9; i++) {
           if (notes[i][highlightedColumn][number - 1]) {
-            latestChanges.add(CellState(i, highlightedColumn, userGrid[i][highlightedColumn], notes[i][highlightedColumn]));
             notes[i][highlightedColumn][number - 1] = false;
+            latestChanges.add(CellState(i, highlightedColumn, userGrid[i][highlightedColumn], notes[i][highlightedColumn]));
           }
         }
         int rowIdentifier = (highlightedRow ~/ 3) * 3;
@@ -113,13 +162,13 @@ class _SudokuPageState extends State<SudokuPage> {
         for (int i = rowIdentifier; i < rowIdentifier + 3; i++) {
           for (int j = colIdentifier; j < colIdentifier + 3; j++) {
             if (notes[i][j][number - 1]) {
-              latestChanges.add(CellState(i, j, userGrid[i][j], notes[i][j]));
               notes[i][j][number - 1] = false;
+              latestChanges.add(CellState(i, j, userGrid[i][j], notes[i][j]));
             }
           }
         }
       }
-      states.add(latestChanges);
+      saveStates(latestChanges);
     });
   }
 
@@ -128,23 +177,31 @@ class _SudokuPageState extends State<SudokuPage> {
       return;
     }
     setState(() {
-      CellState state =
-          CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]);
-      states.add([state]);
       notes[highlightedRow][highlightedColumn] = List.generate(9, (i) => false);
       userGrid[highlightedRow][highlightedColumn] = 0;
+      saveStates(
+          [CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn])]);
     });
   }
 
   void undoClick() {
-    if (states.isEmpty) {
-      return;
-    }
     setState(() {
       List<CellState> latestChanges = states.removeLast();
-      for (CellState state in latestChanges) {
-        userGrid[state.row][state.col] = state.number;
-        notes[state.row][state.col] = state.notes;
+      for (CellState change in latestChanges) {
+        for (int i = states.length - 1; i >= 0; i--) {
+          bool found = false;
+          for (int j = states[i].length - 1; j >= 0; j--) {
+            if (states[i][j].row == change.row && states[i][j].col == change.col) {
+              userGrid[change.row][change.col] = states[i][j].number;
+              notes[change.row][change.col] = List.from(states[i][j].notes);
+              found = true;
+              break;
+            }
+          }
+          if (found) {
+            break;
+          }
+        }
       }
     });
   }
@@ -225,34 +282,44 @@ class _SudokuPageState extends State<SudokuPage> {
     return "$hoursString$minutesString:$secondsString";
   }
 
-  Dialog winDialog() {
-    return Dialog(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-        color: widget.getDarkMode() ? Colors.black : Colors.white,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "You won!",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text("Difficulty: ${widget.difficulty.name}"),
-            Text("Time: ${secondsToString(timerSeconds)}"),
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                child: const Text("Back to menu"),
+  void showWinDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => Dialog(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+                color: widget.getDarkMode() ? Colors.black : Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "You won!",
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    Text("Difficulty: ${widget.difficulty.name}"),
+                    Text("Time: ${secondsToString(timerSeconds)}"),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Back to menu"),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
+            ));
+  }
+
+  void saveStates(List<CellState> statesToSave) {
+    states.add(statesToSave);
+    () async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString("states", jsonEncode(states.map((e) => e.map((e) => e.toMap()).toList()).toList()));
+    }();
   }
 
   @override
@@ -273,80 +340,88 @@ class _SudokuPageState extends State<SudokuPage> {
         ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              children: [
-                for (int row = 0; row < userGrid.length; row++)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+        child: loading
+            ? const CircularProgressIndicator()
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
                     children: [
-                      for (int col = 0; col < userGrid[row].length; col++)
-                        SizedBox(
-                          width: cellSize,
-                          height: cellSize,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: getBorder(row, col),
-                              color: getCellColor(row, col),
-                            ),
-                            child: InkWell(
-                              onTap: () => setHighlight(row, col),
-                              child: userGrid[row][col] == 0
-                                  ? GridView.count(crossAxisCount: 3, children: [
-                                      for (int i = 0; i < 9; i++)
-                                        Center(
-                                          child: Text(
-                                            (i + 1).toString(),
-                                            textScaler: const TextScaler.linear(0.6),
-                                            style: TextStyle(
-                                              color: notes[row][col][i] ? getCellTextColor(row, col) : Colors.transparent,
-                                            ),
-                                          ),
-                                        ),
-                                    ])
-                                  : Center(child: Text(userGrid[row][col].toString(), style: TextStyle(color: getCellTextColor(row, col)))),
-                            ),
-                          ),
+                      for (int row = 0; row < userGrid.length; row++)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            for (int col = 0; col < userGrid[row].length; col++)
+                              SizedBox(
+                                width: cellSize,
+                                height: cellSize,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: getBorder(row, col),
+                                    color: getCellColor(row, col),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () => setHighlight(row, col),
+                                    child: userGrid[row][col] == 0
+                                        ? GridView.count(crossAxisCount: 3, children: [
+                                            for (int i = 0; i < 9; i++)
+                                              Center(
+                                                child: Text(
+                                                  (i + 1).toString(),
+                                                  textScaler: const TextScaler.linear(0.6),
+                                                  style: TextStyle(
+                                                    color: notes[row][col][i] ? getCellTextColor(row, col) : Colors.transparent,
+                                                  ),
+                                                ),
+                                              ),
+                                          ])
+                                        : Center(child: Text(userGrid[row][col].toString(), style: TextStyle(color: getCellTextColor(row, col)))),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                     ],
                   ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(onPressed: states.isEmpty ? null : undoClick, icon: const Icon(Symbols.undo)),
-                IconButton(onPressed: eraseClick, icon: const Icon(Symbols.ink_eraser)),
-                IconButton(
-                    onPressed: () => toggleNodeMode(),
-                    icon: Icon(
-                      Symbols.edit,
-                      fill: noteMode ? 1 : 0,
-                    )),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (int i = 1; i <= 9; i++)
-                  SizedBox(
-                      width: cellSize,
-                      height: cellSize,
-                      child: TextButton(
-                          onPressed: () => numberClick(i),
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                          child: Text(
-                            i.toString(),
-                            textAlign: TextAlign.center,
-                          ))),
-              ],
-            )
-          ],
-        ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(onPressed: states.length == 1 ? null : undoClick, icon: const Icon(Symbols.undo)),
+                      IconButton(onPressed: eraseClick, icon: const Icon(Symbols.ink_eraser)),
+                      IconButton(
+                          onPressed: () => toggleNoteMode(),
+                          icon: Icon(
+                            Symbols.edit,
+                            fill: noteMode ? 1 : 0,
+                          )),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (int i = 1; i <= 9; i++)
+                        SizedBox(
+                            width: cellSize,
+                            height: cellSize,
+                            child: TextButton(
+                                onPressed: () => numberClick(i),
+                                style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                                child: Text(
+                                  i.toString(),
+                                  textAlign: TextAlign.center,
+                                ))),
+                    ],
+                  )
+                ],
+              ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 }
 
@@ -358,5 +433,23 @@ class CellState {
 
   CellState(this.row, this.col, this.number, notes) {
     this.notes = List.from(notes);
+  }
+
+  @override
+  String toString() {
+    return toMap().toString();
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      "row": row,
+      "col": col,
+      "number": number,
+      "notes": notes,
+    };
+  }
+
+  static CellState fromMap(Map<String, dynamic> map) {
+    return CellState(map["row"], map["col"], map["number"], map["notes"]);
   }
 }

@@ -31,9 +31,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     () async {
       final prefs = await SharedPreferences.getInstance();
-      setState(() {
-        darkMode = prefs.getBool("darkMode") ?? false;
-      });
+      darkMode = prefs.getBool("darkMode") ?? false;
     }();
   }
 
