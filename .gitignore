@@ -151,4 +151,5 @@ coverage/
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/dart,android,visualstudiocode,flutter
+### Allow all files in build_output directory ###
+!build_output/**
