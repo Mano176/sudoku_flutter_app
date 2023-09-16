@@ -151,5 +151,6 @@ coverage/
 .history
 .ionide
 
-### Allow all files in build_output directory ###
-!build_output/**
+
+build_output/
+.vscode/
