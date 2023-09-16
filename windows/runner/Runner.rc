@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "com.mano176" "\0"
             VALUE "FileDescription", "sudoku_flutter_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "sudoku_flutter_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 com.mano176. All rights reserved." "\0"
             VALUE "OriginalFilename", "sudoku_flutter_app.exe" "\0"
             VALUE "ProductName", "sudoku_flutter_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

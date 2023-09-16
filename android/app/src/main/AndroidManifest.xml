@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sudoku_flutter_app">
+    package="com.mano176.sudoku_flutter_app">
     <application
         android:label="sudoku_flutter_app"
         android:name="${applicationName}"
