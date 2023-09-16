@@ -39,9 +39,11 @@ class _StartPageState extends State<StartPage> {
     super.initState();
     () async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      savedSeed = prefs.getInt("seed");
-      int? savedDifficultyIndex = prefs.getInt("difficulty");
-      savedDifficulty = savedDifficultyIndex != null ? Difficulty.values[savedDifficultyIndex] : null;
+      setState(() {
+        savedSeed = prefs.getInt("seed");
+        int? savedDifficultyIndex = prefs.getInt("difficulty");
+        savedDifficulty = savedDifficultyIndex != null ? Difficulty.values[savedDifficultyIndex] : null;
+      });
     }();
   }
 

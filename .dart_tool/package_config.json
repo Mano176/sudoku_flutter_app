@@ -269,7 +269,7 @@
       "name": "sky_engine",
       "rootUri": "file:///E:/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
-      "languageVersion": "3.0"
+      "languageVersion": "3.2"
     },
     {
       "name": "source_span",
@@ -362,7 +362,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2023-09-13T16:31:22.468101Z",
+  "generated": "2023-09-16T11:25:50.035478Z",
   "generator": "pub",
-  "generatorVersion": "3.2.0-140.0.dev"
+  "generatorVersion": "3.2.0-167.0.dev"
 }
