@@ -20,4 +20,4 @@ move build\web %folder%\web
 echo Building Windows
 call flutter build windows
 if not exist %folder%\windows mkdir %folder%\windows
-move build\windows\x64\runner\Release\* %folder%\windows
+move build\windows\x64\runner\Release %folder%\windows
