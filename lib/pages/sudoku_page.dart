@@ -231,7 +231,10 @@ class _SudokuPageState extends State<SudokuPage> {
     return row == highlightedRow ||
         col == highlightedColumn ||
         (row ~/ 3) * 3 + (col ~/ 3) == highlightedSquare ||
-        (highlightedRow != -1 && highlightedColumn != -1 && userGrid[row][col] == userGrid[highlightedRow][highlightedColumn]);
+        (highlightedRow != -1 &&
+            highlightedColumn != -1 &&
+            userGrid[highlightedRow][highlightedColumn] != 0 &&
+            userGrid[row][col] == userGrid[highlightedRow][highlightedColumn]);
   }
 
   Color? getCellColor(int row, int col) {
