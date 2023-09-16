@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sudoku_flutter_app/main.dart';
 import '../sudoku_algorithms.dart';
 import 'sudoku_page.dart';
 
@@ -19,32 +20,29 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
   int? savedSeed;
   Difficulty? savedDifficulty;
+  int? savedTimerSeconds;
 
   void startSoduko(BuildContext context, bool fromSave, int seed, Difficulty difficulty) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SudokuPage(fromSave, seed, difficulty, widget.setDarkMode, widget.getDarkMode)),
-    ).then((value) async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      setState(() {
-        savedSeed = prefs.getInt("seed");
-        int? savedDifficultyIndex = prefs.getInt("difficulty");
-        savedDifficulty = savedDifficultyIndex != null ? Difficulty.values[savedDifficultyIndex] : null;
-      });
+    ).then((value) => loadSavedData());
+  }
+
+  void loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      savedSeed = prefs.getInt("seed");
+      int? savedDifficultyIndex = prefs.getInt("difficulty");
+      savedDifficulty = savedDifficultyIndex != null ? Difficulty.values[savedDifficultyIndex] : null;
+      savedTimerSeconds = prefs.getInt("timerSeconds");
     });
   }
 
   @override
   void initState() {
     super.initState();
-    () async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      setState(() {
-        savedSeed = prefs.getInt("seed");
-        int? savedDifficultyIndex = prefs.getInt("difficulty");
-        savedDifficulty = savedDifficultyIndex != null ? Difficulty.values[savedDifficultyIndex] : null;
-      });
-    }();
+    loadSavedData();
   }
 
   @override
@@ -79,7 +77,8 @@ class _StartPageState extends State<StartPage> {
                 padding: const EdgeInsets.all(5.0),
                 child: OutlinedButton(
                   onPressed: savedSeed == null ? null : () => startSoduko(context, true, savedSeed!, savedDifficulty!),
-                  child: Text(savedSeed == null ? "No game saved" : savedDifficulty!.name, textAlign: TextAlign.center),
+                  child: Text(savedSeed == null ? "No game saved" : "${savedDifficulty!.name} ${secondsToString(savedTimerSeconds!)}",
+                      textAlign: TextAlign.center),
                 ),
               ),
             ),
@@ -109,7 +108,7 @@ class _StartPageState extends State<StartPage> {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    startSoduko(context, false, Random().nextInt(double.maxFinite.toInt()), difficulty);
+                                    startSoduko(context, false, Random().nextInt(2 ^ 32), difficulty);
                                   },
                                   child: const Text("Start"),
                                 ),

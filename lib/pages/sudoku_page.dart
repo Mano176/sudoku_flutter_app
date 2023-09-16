@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sudoku_flutter_app/main.dart';
 import 'package:sudoku_flutter_app/sudoku_algorithms.dart';
 
 const double cellSize = 35;
@@ -272,17 +273,6 @@ class _SudokuPageState extends State<SudokuPage> {
       left: BorderSide(color: left, width: 1.0),
       right: BorderSide(color: right, width: 1.0),
     );
-  }
-
-  String secondsToString(int seconds) {
-    int minutes = seconds ~/ 60;
-    seconds = seconds % 60;
-    int hours = minutes ~/ 60;
-    minutes = minutes % 60;
-    String hoursString = hours == 0 ? "" : "$hours:";
-    String minutesString = minutes.toString().padLeft(2, "0");
-    String secondsString = seconds.toString().padLeft(2, "0");
-    return "$hoursString$minutesString:$secondsString";
   }
 
   void showWinDialog() {

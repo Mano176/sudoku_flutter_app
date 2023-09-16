@@ -16,6 +16,17 @@ void main() async {
   runApp(const MyApp());
 }
 
+String secondsToString(int seconds) {
+  int minutes = seconds ~/ 60;
+  seconds = seconds % 60;
+  int hours = minutes ~/ 60;
+  minutes = minutes % 60;
+  String hoursString = hours == 0 ? "" : "$hours:";
+  String minutesString = minutes.toString().padLeft(2, "0");
+  String secondsString = seconds.toString().padLeft(2, "0");
+  return "$hoursString$minutesString:$secondsString";
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
