@@ -8,6 +8,7 @@ import 'package:sudoku_flutter_app/main.dart';
 import 'package:sudoku_flutter_app/sudoku_algorithms.dart';
 
 const double cellSize = 35;
+const int maxTries = 3;
 
 class SudokuPage extends StatefulWidget {
   final bool fromSave;
@@ -38,6 +39,7 @@ class _SudokuPageState extends State<SudokuPage> {
   int highlightedColumn = -1;
   int highlightedSquare = -1;
   int timerSeconds = 0;
+  int tries = maxTries;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _SudokuPageState extends State<SudokuPage> {
       final prefs = await SharedPreferences.getInstance();
       if (widget.fromSave) {
         timerSeconds = prefs.getInt("timerSeconds")!;
+        tries = prefs.getInt("tries")!;
         states = List<List<CellState>>.from(
             jsonDecode(prefs.getString("states")!).map((e) => List<CellState>.from(e.map((e2) => CellState.fromMap(e2)))).toList());
         userGrid = List.generate(9, (i) => List.generate(9, (j) => 0));
@@ -77,6 +80,7 @@ class _SudokuPageState extends State<SudokuPage> {
         prefs.setInt("seed", widget.seed);
         prefs.setInt("difficulty", widget.difficulty.index);
         prefs.setInt("timerSeconds", timerSeconds);
+        prefs.setInt("tries", tries);
       }
     }()
         .then((value) {
@@ -134,6 +138,7 @@ class _SudokuPageState extends State<SudokuPage> {
         latestChanges
             .add(CellState(highlightedRow, highlightedColumn, userGrid[highlightedRow][highlightedColumn], notes[highlightedRow][highlightedColumn]));
         if (checkGridFull(userGrid)) {
+          saveStates(latestChanges);
           if (checkWin()) {
             () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -143,6 +148,18 @@ class _SudokuPageState extends State<SudokuPage> {
             showWinDialog();
           } else {
             markFalse();
+            tries--;
+            if (tries == 0) {
+              () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.remove("seed");
+              }();
+              showLoseDialog();
+            }
+            () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setInt("tries", tries);
+            }();
           }
           return;
         }
@@ -204,6 +221,10 @@ class _SudokuPageState extends State<SudokuPage> {
           }
         }
       }
+      () async {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString("states", jsonEncode(states.map((e) => e.map((e) => e.toMap()).toList()).toList()));
+      }();
     });
   }
 
@@ -309,6 +330,34 @@ class _SudokuPageState extends State<SudokuPage> {
     );
   }
 
+  void showLoseDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("You Lost!"),
+          ],
+        ),
+        surfaceTintColor: Colors.transparent,
+        content: const Text("You ran out of tries!", textAlign: TextAlign.center),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text("Back to menu"),
+          )
+        ],
+      ),
+    );
+  }
+
   void saveStates(List<CellState> statesToSave) {
     states.add(statesToSave);
     () async {
@@ -323,9 +372,13 @@ class _SudokuPageState extends State<SudokuPage> {
       appBar: AppBar(
         title: Text(widget.difficulty.name),
         actions: [
-          Text(
-            secondsToString(timerSeconds),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+            child: Text(secondsToString(timerSeconds)),
           ),
+          Row(children: [
+            for (int i = 0; i < maxTries; i++) Icon(Symbols.close, color: i < tries ? null : Colors.grey, size: 20),
+          ]),
           IconButton(
             icon: Icon(widget.getDarkMode() ? Symbols.dark_mode : Symbols.light_mode),
             onPressed: () {
