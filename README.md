@@ -1,4 +1,8 @@
 # Simple Sudoku App in Flutter
+![GitHub release (with filter)](https://img.shields.io/github/v/release/Mano176/sudoku_flutter_app)
+![GitHub top language](https://img.shields.io/github/languages/top/Mano176/sudoku_flutter_app)
+![repository size](https://img.shields.io/github/repo-size/Mano176/sudoku_flutter_app)
+![GitHub Repo stars](https://img.shields.io/github/stars/Mano176/sudoku_flutter_app)
 
 This is a simple Sudoku app written in Flutter with the following features:  
 - 🛠️ Sudoku generation
